@@ -36,33 +36,55 @@ class cajero(  ):
                 }
             }
     
-    def CargaInicial(self, carga100=0, carga50=0, carga10=0,
-                     carga20=0 ,  carga5=0,    carga1=0):
+    def CargaInicialStandar(self):
         """
         CargaInicial:
             cuando se carga el cajero se ingresa la cantidad de billetes 
             por cada denominacion
         """
-        self.billete100=carga100
-        self.billete50=carga50
-        self.billete20=carga20
-        self.billete10=carga10
-        self.billete5=carga5
-        self.billete1=carga1
+        carga={
+            "billete100" : {
+                "denominacion" : 100,
+                "cantidad" : 10
+                },
+            "billete50" : {
+                "denominacion" : 50,
+                "cantidad" : 10
+                },
+            "billete20" : {
+                "denominacion" : 20,
+                "cantidad" : 10
+                },
+            "billete10" : {
+                "denominacion" : 10,
+                "cantidad" : 10
+                },
+            "billete5" : {
+                "denominacion" : 5,
+                "cantidad" : 10
+                },
+            "billete1" : {
+                "denominacion" : 1,
+                "cantidad" : 10
+                }
+            }
+        
+        for billete in self.dinero:
+            self.dinero[billete]["cantidad"]=carga[billete]["cantidad"]
+            
         
     def EntregaDinero(self, entregado):
         """
         resta la cantidad correspondiete a cada denominacion extraida
         """
-        dinero=self.dinero
-        print("emito el dinero y veo cuanto queda por cada denominacion")
         
-        for k in dinero:
-            self.dinero[k]["canitdad"]=self.dinero[k]["canitdad"]-despacho["canitdad"]
-            print("denominacion=" , self.dinero[k]["denominacion"])
-            print("cantidad=", self.dinero[k]["cantidad"])
+       # print("emito el dinero ")
+        
+        for billete in self.dinero:
+            self.dinero[billete]["cantidad"]=self.dinero[billete]["cantidad"]-entregado[billete]["cantidad"]
+            
 
-    def SolicitudDinero2(self, montoSolicitado):
+    def SolicitudDinero(self, montoSolicitado):
         """
         calcula cuanto tiene que despachar
         """           
@@ -93,180 +115,94 @@ class cajero(  ):
                 }
             }
 
-        dinero=self.dinero
-        montoSolicitado=521
-        print("billete ")
-    
+        dinero=self.dinero   
         monto=montoSolicitado
-        for k in dinero:
-            #print ("k",k) # billete
-            print("denominacion=",dinero[k]["denominacion"])
-            print("cantidad=",dinero[k]["cantidad"])    
+        
+        montoMaximo=0
+        for billete in dinero:
+            montoMaximo+=dinero[billete]["denominacion"]*dinero[billete]["cantidad"]
             
+        if monto > montoMaximo:
+            print("no hay suficiente dinero disponible")
+            return(despacho)
+        
+        
+        for billete in dinero:
+                        
             if 0 < monto:
                  #tengo billetes de 100
-                 if 0 < dinero[k]["cantidad"]:
+                 if 0 < dinero[billete]["cantidad"]:
                      #Cantidad de 100 que necesito
-                     cant100= int(monto /dinero[k]["denominacion"])
+                     cant100= int(monto /dinero[billete]["denominacion"])
                      #tengo esa cantidad?
-                     if 0 < dinero[k]["cantidad"]-cant100:
+                     if 0 < dinero[billete]["cantidad"]-cant100:
                          #tengo esa cantidad   
-                         despacho[k]["cantidad"]=cant100
+                         despacho[billete]["cantidad"]=cant100
                      else:
                          #no tengo esa cantidad, asi que entrego los que tengo
-                         despacho[k]["cantidad"]=dinero[k]["cantidad"]
+                         despacho[billete]["cantidad"]=dinero[billete]["cantidad"]
                 #monto restante = cantidad * denominacion
-                 monto=monto-despacho[k]["denominacion"]*despacho[k]["cantidad"]           
-                 print("monto", monto)
-                    
-        print("---"*12)            
-        print("despacho")
+                 monto=monto-despacho[billete]["denominacion"]*despacho[billete]["cantidad"]           
         
-        for k in despacho:
-            #print ("k",k) # billete
-            print("denominacion=",despacho[k]["denominacion"])
-            print("cantidad=",despacho[k]["cantidad"])
             
-        EntregaDinero( despacho)
+        return( despacho)
         
-    def SolicitudDinero(self, montoSolicitado):
+        
+        
+    def CantidadDenominacion(self):
         """
-        Calcula como entregar el dinero
+        muestra la cantidad de dinero por cada denominacion
         """
-        dinero={
-            "billete100" : {
-                "denominacion" : 100,
-                "cantidad" : 4
-                },
-            "billete50" : {
-                "denominacion" : 50,
-                "cantidad" : 2007
-                },
-            "billete20" : {
-                "denominacion" : 50,
-                "cantidad" : 2007
-                }
-            }
+        dinero=self.dinero
         
-        monto=montoSolicitado
+        for billete in dinero:
+            print("denominacion=" , dinero[billete]["denominacion"])
+            print("cantidad=", dinero[billete]["cantidad"])
+       
         
-        #tengo villetes de 100
-        if 0==self.billete100:
-            #Cantidad de 100 que necesito
-            cant100=monto/100
-            if 0 < self.billete100-cant100:
-                #tengo esa cantidad   
-                despacho100=cant100
-            else:
-                #no tengo esa cantidad, asi que entrego los que tengo
-                despacho100=self.billete100
-        
-        #monto restante = cantidad * denominacion
-        monto=monto-despacho100*100
-        
-        
-                
-            
-        
-        
-    def CantidadDenominacion():
+    def CantidadMaximaDisponible(self):
         """
+        calcula cuanto es el total de dinero que tiene el cajero
         """
-        
-        
-    
-        
-
+        montoMaximo=0
+        for billete in self.dinero:
+            montoMaximo+=self.dinero[billete]["denominacion"]*self.dinero[billete]["cantidad"]
+        return(montoMaximo)
 
 if __name__ == "__main__":
-   # cajero.CargaInicial(1, 2 , 3 , 4 , 5 , 6)
-    #valor = input("Ingrese un valor a retirar: ")
-        
-    dinero={
-            "billete100" : {
-                "denominacion" : 100,
-                "cantidad" : 4
-                },
-            "billete50" : {
-                "denominacion" : 50,
-                "cantidad" : 3
-                },
-            "billete20" : {
-                "denominacion" : 20,
-                "cantidad" : 6
-                },
-            "billete10" : {
-                "denominacion" : 10,
-                "cantidad" : 9
-                },
-            "billete5" : {
-                "denominacion" : 5,
-                "cantidad" : 12
-                },
-            "billete1" : {
-                "denominacion" : 1,
-                "cantidad" : 24
-                }
-            }
-    despacho={
-            "billete100" : {
-                "denominacion" : 100,
-                "cantidad" : 0
-                },
-            "billete50" : {
-                "denominacion" : 50,
-                "cantidad" : 0
-                },
-            "billete20" : {
-                "denominacion" : 20,
-                "cantidad" : 0
-                },
-            "billete10" : {
-                "denominacion" : 10,
-                "cantidad" : 0
-                },
-            "billete5" : {
-                "denominacion" : 5,
-                "cantidad" : 0
-                },
-            "billete1" : {
-                "denominacion" : 1,
-                "cantidad" : 0
-                }
-            }
-
-    
-    
-    montoSolicitado=521
-    print("billete ")
-
-    monto=montoSolicitado
-    for k in dinero:
-        #print ("k",k) # billete
-        print("denominacion=",dinero[k]["denominacion"])
-        print("cantidad=",dinero[k]["cantidad"])    
-        
-        if 0 < monto:
-             #tengo billetes de 100
-             if 0 < dinero[k]["cantidad"]:
-                 #Cantidad de 100 que necesito
-                 cant100= int(monto /dinero[k]["denominacion"])
-                 #tengo esa cantidad?
-                 if 0 < dinero[k]["cantidad"]-cant100:
-                     #tengo esa cantidad   
-                     despacho[k]["cantidad"]=cant100
-                 else:
-                     #no tengo esa cantidad, asi que entrego los que tengo
-                     despacho[k]["cantidad"]=dinero[k]["cantidad"]
-            #monto restante = cantidad * denominacion
-             monto=monto-despacho[k]["denominacion"]*despacho[k]["cantidad"]           
-             print("monto", monto)
-                
-    print("---"*12)            
-    print("despacho")
-    
-    for k in despacho:
-        #print ("k",k) # billete
-        print("denominacion=",despacho[k]["denominacion"])
-        print("cantidad=",despacho[k]["cantidad"])    
-        
+   cjro=cajero()
+   
+   print("---"*12)
+   print("veo que el cajero este vacio")
+   cjro.CantidadDenominacion()
+   
+   print("---"*12)
+   print("hago la carga inicial standar")
+   cjro.CargaInicialStandar()
+   
+   
+   print("---"*12)
+   print("cuanto dinero tiene el cajero?")
+   dineroTotal=cjro.CantidadMaximaDisponible()
+   print("el total de dinero es= ",dineroTotal)
+   
+   print("---"*12)
+   print("veo quedo cargado en el cajero")
+   cjro.CantidadDenominacion()
+   
+   
+   
+   print("---"*12)
+   print("hago una solicitud de dinero")
+   entregar=cjro.SolicitudDinero(46)
+  
+   
+   print("---"*12)
+   print("entrega dinero")
+   cjro.EntregaDinero(entregar)
+   
+   
+   print("---"*12)
+   print("veo cuanto quedo en el cajero")
+   cjro.CantidadDenominacion()
+   
