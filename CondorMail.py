@@ -4,13 +4,13 @@ Created on Thu Aug 27 09:50:11 2020
 
 @author: Matias
 """
-#importo librerias 
+#importo librerias
 # manejo de fechas
 from datetime import datetime
-# manejo de string 
+# manejo de string
 # documentacion: https://docs.python.org/2/library/re.html
 import re
-
+from operator import itemgetter
 
 def LeerArchivoMail():
     """
@@ -35,11 +35,11 @@ def LeerArchivoMail():
 
     #print("mailsOK:", mailsOK)
     #MailA Flag: A B Fecha de RecepciÃ³n: 01/01/15.
-    
+
     return(mailsOK)
 
 
-    
+
 def ProesarSolicitud(solicitud):
     """
     procesa la solisitud para el ordenamiento
@@ -66,11 +66,11 @@ def BuscarFecha(mail):
     #print(mail[-9:-1])
     stringFecha=mail[-9:-1]
 
-    #convierto en formato fecha    
+    #convierto en formato fecha
     fecha = datetime.strptime(stringFecha, '%d/%m/%y')
     #print(fecha.date())
     return(fecha.date())
-    
+
 def BuscarFlags(mail):
     """
     retorna los flags del mail
@@ -79,7 +79,7 @@ def BuscarFlags(mail):
         # busco los flags en la secuencia en el estring que este entre
         # las palabras Flag: XXXX Fecha
         # MailA Flag: A B Fecha de RecepciÃ³n: 01/04/15.
-        
+
         flag = re.search('Flag: (.+?) Fecha ', mail).group(1)
         #print(flag)
         return(flag)
@@ -91,9 +91,9 @@ def CustomizarMail(mails):
     """
     a la lista de mail la prepara para analizarla
     """
-    
-    camposArmados=[] 
-    
+
+    camposArmados=[]
+
     for mail in mails:
         # los armo en este orden [flags, fecha, cotenido¨]
         aux= {"Flag":BuscarFlags(mail) ,"fecha":BuscarFecha(mail)  ,"cuerpo":mail }
@@ -101,34 +101,25 @@ def CustomizarMail(mails):
     #print(a)
     return(camposArmados)
 
-def OrdenarMails(mails2, ordenes):
+def OrdenarMails(mails_original, ordenes):
     """
     Ordena la lista de mails en el orden dado
     https://www.w3schools.com/python/ref_list_sort.asp
     """
-    mails=mails2.copy()
+    mails=mails_original.copy()
     print("sin ordenar:")
     for newlst in mails:
         print(newlst)
     #    print(newlst["Flag"])
         print("")
-    
     print("----"*12)
-    
-    
-    
-    """for mail in mails:
-        if "A" in mail["Flag"]:
-            #lo ordeno
-    """        
-    from operator import itemgetter 
-    
+
 
     listaFlag=[]
     newlist=[]
     #recorro las ordenes
     for orden in ordenes:
-        #separo la orden 
+        #separo la orden
         orde = orden.split("-")
         #recorro los mail
         for mail in mails:
@@ -136,7 +127,6 @@ def OrdenarMails(mails2, ordenes):
             print("reviso=",mail)
             index=mails.index(mail)
             print(index)
-                
             if orde[0] in mail["Flag"]:
                 #los guardo en la lista para ordenar
                 listaFlag.append(mail.copy())
@@ -145,14 +135,25 @@ def OrdenarMails(mails2, ordenes):
                 print("remove=",mail)
             else:
                 print("no tiene flag")
-                                
+
         #me fijo si el orden es fifo o lifo
         if "FIFO" in orde[1]:
             #orden FIFO
-            newlist = newlist + sorted(listaFlag, key=itemgetter('fecha')) 
+            newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'))
+
         else:
             #orden LIFO
-            newlist = newlist + sorted(listaFlag, key=itemgetter('fecha'),reverse=True) 
+            newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'),reverse=True)
+
+        #borro tolos los elementos de la listaFlag
+        listaFlag.clear()
+
+    #Como no especifica el critero para los flag algunos flag los ordeno por fecha
+    for mail in mails:
+        if "--"!=  mail["Flag"]:
+            listaFlag.append(mail.copy())
+            mail["Flag"]="--"
+    newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'))
 
     print("----"*12)
     print("ordenado:")
@@ -172,7 +173,7 @@ def OrdenarMails(mails2, ordenes):
 
 
 
-    
+
 
 def OrdenarMails_0(mails, orden):
     """
@@ -182,23 +183,23 @@ def OrdenarMails_0(mails, orden):
     print("sin ordenar:")
     print(mails)
     print("----"*12)
-    
+
     #mails.sort("Flag")
-    
+
     """for mail in mails:
         if "A" in mail["Flag"]:
             #lo ordeno
-    """        
-    
-    from operator import itemgetter 
-    newlist = sorted(mails, key=itemgetter('Flag','fecha')) 
+    """
+
+    from operator import itemgetter
+    newlist = sorted(mails, key=itemgetter('Flag','fecha'))
     for newlst in newlist:
         print(newlst)
         print("")
-    
-        
-    
-    
+
+
+
+
 if __name__== "__main__":
     #ProesarSolicitud("B-LIFO|!C-FIFO|C-LIFO")
     #BuscarFecha("MailA Flag: A B Fecha de RecepciÃ³n: 01/04/15.")
@@ -208,6 +209,3 @@ if __name__== "__main__":
     orden=ProesarSolicitud("B-LIFO|!C-FIFO|C-LIFO")
     mailsCustomizados= CustomizarMail(mails)
     OrdenarMails(mailsCustomizados, orden)
-    
-    
-    
