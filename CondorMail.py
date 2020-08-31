@@ -40,21 +40,20 @@ def LeerArchivoMail():
 
 
 
-def ProesarSolicitud(solicitud):
+def ProcesarSolicitud(solicitud):
     """
     procesa la solisitud para el ordenamiento
     retorna el orden a realizar
     """
 
     ordenes=solicitud.split("|")
-
     ordenesOK=[]
     for orden in ordenes:
-        if "!" not in orden:
+        #if "!" not in orden:
            #orden valida, me la quedo
-            ordenesOK.append(orden)
+        ordenesOK.append(orden)
 
-    #print(ordenesOK)
+    
     return(ordenesOK)
 
 
@@ -101,18 +100,13 @@ def CustomizarMail(mails):
     #print(a)
     return(camposArmados)
 
-def OrdenarMails(mails_original, ordenes):
+def OrdenarMails_0(mails_original, ordenes):
     """
     Ordena la lista de mails en el orden dado
-    https://www.w3schools.com/python/ref_list_sort.asp
+    
     """
     mails=mails_original.copy()
-    print("sin ordenar:")
-    for newlst in mails:
-        print(newlst)
-    #    print(newlst["Flag"])
-        print("")
-    print("----"*12)
+  
 
 
     listaFlag=[]
@@ -124,88 +118,223 @@ def OrdenarMails(mails_original, ordenes):
         #recorro los mail
         for mail in mails:
             #me fijo si tienen el flag
-            print("reviso=",mail)
-            index=mails.index(mail)
-            print(index)
             if orde[0] in mail["Flag"]:
                 #los guardo en la lista para ordenar
                 listaFlag.append(mail.copy())
                 #ahora tengo que sacarlo de la lista a revisar
                 mail["Flag"]="--"
-                print("remove=",mail)
-            else:
-                print("no tiene flag")
+             
 
         #me fijo si el orden es fifo o lifo
         if "FIFO" in orde[1]:
             #orden FIFO
             newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'))
-
         else:
             #orden LIFO
             newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'),reverse=True)
-
         #borro tolos los elementos de la listaFlag
         listaFlag.clear()
 
-    #Como no especifica el critero para los flag algunos flag los ordeno por fecha
+    #especifica el critero para los flag algunos flag los ordeno por fecha
+    newlist2=[]
+    for orden in ordenes:               
+        orde = orden.split("-")
+        for mail in mails:
+            if "--"!=  mail["Flag"]:
+                listaFlag.append(mail.copy())
+                mail["Flag"]="--"        
+        if "FIFO" in orde[1]:
+            #orden FIFO
+            newlist2 = newlist2+ sorted(listaFlag.copy(), key=itemgetter('fecha'))
+        else:
+            #orden LIFO
+            newlist2 = newlist2+ sorted(listaFlag.copy(), key=itemgetter('fecha'),reverse=True)
+
+        #borro tolos los elementos de la listaFlag
+        listaFlag.clear()
+   
+    #
+    flagNo=1
+    for orden in ordenes:
+        orde = orden.split("-")
+        if "!" in orde[0]:
+            flagNo=0
+            
+    if 0==flagNo:
+        #tengo que incertar la lista de las ! flag en su posicion
+        for orden in range(len(ordenes)):
+            #separo la orden
+            orde = ordenes[orden].split("-")
+            #recorro los mail
+            for mail in newlist:
+                #me fijo si tienen el flag
+     #           print("reviso=",mail)
+                index=newlist.index(mail)
+      #          print(index)
+                if orde[0] not in mail["Flag"]:
+                #salto de flag en la lista ordenada
+       #             print("orde[0] in mail[Flag]")
+                
+                    #me fijo si !flag tiene que ir
+                    a=ordenes[orden+1].split("-")
+                    if "!" in a[0]:
+                        #incerto la lista en el lugar
+                        newlist.insert(index,newlist2)
+                        
+                        ##muestro las cosas y e voy                    
+                        print("----"*12)
+                        print("ordenado:")
+                        for newl in newlist:
+                            print(newl)
+                            index=newlist.index(newl)
+                            print(index)
+                            print("")
+                    
+                        #return(0)
+                        print("////"*12)
+                        print("sin ordenar:")
+                        for newlst in mails:
+                            print(newlst)
+                            #print(newlst["Flag"])
+                            print("")
+                            
+                        return(0)
+
+def OrdenarListaPorFecha(lista, sentido):
+    """
+    ordena la lista en el sentido que corresponde
+    """
+    
+    
+    
+def EscribirArchivo(mails):
+    """
+    escribo el archivo con la salida solicitada
+    """
+    archivoOrdenado = open("./mailOrdenados.txt", "a")
+    archivoOrdenado.write("ordenados\n")
     for mail in mails:
-        if "--"!=  mail["Flag"]:
-            listaFlag.append(mail.copy())
-            mail["Flag"]="--"
-    newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'))
-
-    print("----"*12)
-    print("ordenado:")
-    for newl in newlist:
-        print(newl)
-        index=newlist.index(newl)
-        print(index)
-        print("")
-
-    #return(0)
-    print("////"*12)
-    print("sin ordenar:")
-    for newlst in mails:
-        print(newlst)
-        #print(newlst["Flag"])
-        print("")
+        archivoOrdenado.write(mail["cuerpo"]+"\n")
+    
+    archivoOrdenado.write("-----\n")    
+    
+    archivoOrdenado.close()
 
 
-
-
-
-def OrdenarMails_0(mails, orden):
+def OrdenarMails(mails_original, ordenes):
     """
     Ordena la lista de mails en el orden dado
-    https://www.w3schools.com/python/ref_list_sort.asp
+    
     """
-    print("sin ordenar:")
-    print(mails)
-    print("----"*12)
+    mails=mails_original.copy()
+  
 
-    #mails.sort("Flag")
+    listaFlag=[]
+    newlist=[]
+    #recorro las ordenes
+    for orden in ordenes:
+        #separo la orden
+        orde = orden.split("-")
+        #recorro los mail
+        for mail in mails:
+            #me fijo si tienen el flag
+            if orde[0] in mail["Flag"]:
+                #los guardo en la lista para ordenar
+                listaFlag.append(mail.copy())
+                #ahora tengo que sacarlo de la lista a revisar
+                mail["Flag"]="--"
+             
 
-    """for mail in mails:
-        if "A" in mail["Flag"]:
-            #lo ordeno
-    """
+        #me fijo si el orden es fifo o lifo
+        if "FIFO" in orde[1]:
+            #orden FIFO
+            newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'))
+        else:
+            #orden LIFO
+            newlist = newlist + sorted(listaFlag.copy(), key=itemgetter('fecha'),reverse=True)
+        #borro tolos los elementos de la listaFlag
+        listaFlag.clear()
 
-    from operator import itemgetter
-    newlist = sorted(mails, key=itemgetter('Flag','fecha'))
-    for newlst in newlist:
-        print(newlst)
-        print("")
+    #especifica el critero para los flag algunos flag los ordeno por fecha
+    newlist2=[]
+    for orden in ordenes:               
+        orde = orden.split("-")
+        for mail in mails:
+            if "--"!=  mail["Flag"]:
+                listaFlag.append(mail.copy())
+                mail["Flag"]="--"        
+        if "FIFO" in orde[1]:
+            #orden FIFO
+            newlist2 = newlist2+ sorted(listaFlag.copy(), key=itemgetter('fecha'))
+        else:
+            #orden LIFO
+            newlist2 = newlist2+ sorted(listaFlag.copy(), key=itemgetter('fecha'),reverse=True)
 
+        #borro tolos los elementos de la listaFlag
+        listaFlag.clear()
+   
+    
+    flagNo=1
+    for orden in ordenes:
+        orde = orden.split("-")
+        if "!" in orde[0]:
+            print("orde[0]",orde[0])
+            flagNo=0
+            print(" ordenes.index(orden)  == len(ordenes)", ordenes.index(orden))
+            print( len(ordenes)-1)
+            if 0 == ordenes.index(orden):
+                print("es esta primero")
+                #lo pongo principio
+                newlist=newlist2+newlist
+                flagNo=1
+                print("----"*12)
+                print("ordenado:")
+                for newl in newlist:
+                    print(newl)
+                    index=newlist.index(newl)
+                    print(index)
+                    print("")
+                EscribirArchivo(newlist)            
+                
+            if ordenes.index(orden) == (len(ordenes)-1):
+                print("esta ultimo")
+                newlist=newlist+newlist2
+                flagNo=1
+                EscribirArchivo(newlist)            
+                
+                
+    if 0==flagNo:
+        #tengo que incertar la lista de las ! flag en su posicion
+        for orden in range(len(ordenes)):
+            #separo la orden
+            orde = ordenes[orden].split("-")
+            #recorro los mail
+            for mail in newlist:
+                #me fijo si tienen el flag
+     #           print("reviso=",mail)
+                index=newlist.index(mail)
+      #          print(index)
+                if orde[0] not in mail["Flag"]:
+                #salto de flag en la lista ordenada
+       #             print("orde[0] in mail[Flag]")
+                
+                    #me fijo si !flag tiene que ir
+                    a=ordenes[orden+1].split("-")
+                    if "!" in a[0]:
+                        #incerto la lista en el lugar
+                        newlist.insert(index,newlist2)
+                        EscribirArchivo(newlist)            
 
-
+    
 
 if __name__== "__main__":
-    #ProesarSolicitud("B-LIFO|!C-FIFO|C-LIFO")
-    #BuscarFecha("MailA Flag: A B Fecha de RecepciÃ³n: 01/04/15.")
-    #BuscarFlags("MailA Flag: A B Fecha de RecepciÃ³n: 01/04/15.")
+
     mails=LeerArchivoMail()
-    #orden=ProesarSolicitud("B-LIFO|!C-FIFO|C-LIFO")
-    orden=ProesarSolicitud("B-LIFO|!C-FIFO|C-LIFO")
+    #no pincha
+    #orden=ProcesarSolicitud("!C-FIFO|B-LIFO|C-LIFO")
+   # orden=ProcesarSolicitud("A-LIFO|C-LIFO|!C-FIFO")
+    #---
+    
+    orden=ProcesarSolicitud("B-LIFO|!C-FIFO|C-LIFO")#pincha
     mailsCustomizados= CustomizarMail(mails)
     OrdenarMails(mailsCustomizados, orden)
